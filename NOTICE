@@ -1,0 +1,26 @@
+Chatterglass
+Copyright (c) 2026 Commander Sabi
+Licensed under the MIT License (see LICENSE).
+
+Third-party credits
+-------------------
+
+Multi-chat overlay by Colin Horn
+  https://chatoverlay.colinhorn.co.uk
+  https://www.colinhorn.co.uk
+  Chatterglass only builds the address for his widget and displays what it
+  renders. It is his project, not part of Chatterglass.
+
+Prior art (ideas and approach only; no code copied)
+  Overlayed  https://github.com/overlayeddev/overlayed  (AGPL-3.0)
+  Discover   https://github.com/trigg/Discover         (see upstream licence)
+
+Runtime libraries used as system packages, not bundled
+  PyGObject           LGPL-2.1-or-later
+  GTK 3               LGPL-2.1-or-later
+  WebKitGTK           LGPL-2.1-or-later / BSD-style components
+  gtk-layer-shell     MIT
+
+Discord is a trademark of Discord Inc. Chatterglass is not affiliated with,
+endorsed by, or sponsored by Discord Inc., Colin Horn, or the Overlayed and
+Discover projects.

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Launcher for Chatterglass.
+#
+# Everything lives in this folder: the code, the assets, and config.json (which
+# holds your Discord tokens, mode 600). Nothing is installed system-wide and
+# nothing is written outside this directory, apart from what GTK and WebKit
+# themselves keep in the usual per-user caches.
+set -eu
+cd "$(dirname "$(readlink -f "$0")")"
+# Keep __pycache__ out of the folder.
+export PYTHONDONTWRITEBYTECODE=1
+exec python3 -m chatterglass "$@"

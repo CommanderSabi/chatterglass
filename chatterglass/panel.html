@@ -1,0 +1,222 @@
+<!-- SPDX-License-Identifier: MIT -->
+<!-- Copyright (c) 2026 Commander Sabi -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chatterglass voice panel</title>
+<style>
+  :root {
+    --bg: rgba(18, 19, 24, 0.72);
+    --row: rgba(255, 255, 255, 0.045);
+    --text: #e9eaf0;
+    --muted: #8b8f9c;
+    --speak: #48d67a;
+    --warn: #f0a13c;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: transparent;
+    font-family: "Inter", "Noto Sans", system-ui, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #panel {
+    display: flex; flex-direction: column;
+    height: 100%; border-radius: 14px;
+    background: var(--bg);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+  #head {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex: 0 0 auto;
+  }
+  #head .name {
+    font-size: 13px; font-weight: 650; letter-spacing: 0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #head .meta {
+    font-size: 11px; color: var(--muted); margin-left: auto;
+    white-space: nowrap; flex: 0 0 auto;
+  }
+  #users {
+    list-style: none; margin: 0; padding: 6px;
+    overflow-y: auto; flex: 1 1 auto;
+    scrollbar-width: none;
+  }
+  #users::-webkit-scrollbar { width: 0; }
+  .user {
+    display: flex; align-items: center; gap: 9px;
+    padding: 5px 6px; border-radius: 9px;
+    margin-bottom: 3px;
+    background: var(--row);
+    transition: background 90ms linear;
+  }
+  .avatar {
+    position: relative;
+    width: 28px; height: 28px; border-radius: 50%;
+    flex: 0 0 auto;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 700;
+    color: #0d0f13;
+    background: #7b8394;
+    box-shadow: 0 0 0 2px transparent;
+    transition: box-shadow 90ms linear;
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .user.speaking .avatar { box-shadow: 0 0 0 2px var(--speak), 0 0 12px rgba(72, 214, 122, 0.45); }
+  .label {
+    min-width: 0; flex: 1 1 auto;
+    font-size: 12.5px; line-height: 1.25;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .user.speaking .label { color: var(--speak); }
+  .badges { display: flex; gap: 3px; flex: 0 0 auto; opacity: 0.95; }
+  .badges svg { width: 13px; height: 13px; display: block; }
+  .badges .mute { color: #ff6b6b; }
+  .badges .deaf { color: var(--warn); }
+  .badges .video { color: #64b5ff; }
+  #empty {
+    flex: 1 1 auto; display: grid; place-items: center;
+    padding: 12px; text-align: center;
+    font-size: 11.5px; color: var(--muted); line-height: 1.4;
+  }
+  #empty.hidden, .hidden { display: none !important; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
+  .dot.live { background: var(--speak); }
+  .dot.wait { background: var(--warn); }
+</style>
+</head>
+<body>
+<div id="panel">
+  <div id="head">
+    <span class="dot" id="dot"></span>
+    <span class="name" id="channel">Discord</span>
+    <span class="meta" id="count"></span>
+  </div>
+  <ul id="users"></ul>
+  <div id="empty">Not in a voice channel</div>
+</div>
+<script>
+(function () {
+  var usersEl = document.getElementById("users");
+  var emptyEl = document.getElementById("empty");
+  var channelEl = document.getElementById("channel");
+  var countEl = document.getElementById("count");
+  var dotEl = document.getElementById("dot");
+  var rows = Object.create(null);
+
+  var ICONS = {
+    mute: '<svg class="mute" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5 7 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3l5 4.5V3.5Z"/><path d="M16 8.5 21 15M21 8.5 16 15" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+    deaf: '<svg class="deaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 14v-2a8 8 0 0 1 13-6.2M20 12v2a8 8 0 0 1-11.5 7.2"/><path d="M3 3l18 18"/></svg>',
+    video: '<svg class="video" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="7" width="11" height="10" rx="2"/><path d="M15 11l5-3v8l-5-3v-2Z"/></svg>'
+  };
+
+  function initials(name) {
+    var parts = String(name || "?").trim().split(/\s+/).slice(0, 2);
+    return parts.map(function (p) { return p.charAt(0).toUpperCase(); }).join("") || "?";
+  }
+
+  function hue(seed) {
+    var h = 0;
+    String(seed || "").split("").forEach(function (ch) { h = (h * 31 + ch.charCodeAt(0)) % 360; });
+    return h;
+  }
+
+  function makeRow(user) {
+    var li = document.createElement("li");
+    li.className = "user";
+    var av = document.createElement("span");
+    av.className = "avatar";
+    var label = document.createElement("span");
+    label.className = "label";
+    var badges = document.createElement("span");
+    badges.className = "badges";
+    li.appendChild(av); li.appendChild(label); li.appendChild(badges);
+    var row = { li: li, avatar: av, label: label, badges: badges };
+    paintRow(row, user);
+    return row;
+  }
+
+  function paintRow(row, user) {
+    var name = user.name || "?";
+    if (row.label.textContent !== name) { row.label.textContent = name; }
+    row.li.classList.toggle("speaking", !!user.speaking);
+
+    var avatar = row.avatar;
+    var needsImage = !!user.avatar;
+    var img = avatar.querySelector("img");
+    if (needsImage) {
+      var src = "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + ".png?size=64";
+      if (!img) {
+        img = document.createElement("img");
+        avatar.textContent = "";
+        avatar.appendChild(img);
+      }
+      if (img.getAttribute("src") !== src) img.setAttribute("src", src);
+    } else if (img) {
+      img.remove();
+      avatar.textContent = initials(name);
+      avatar.style.background = "hsl(" + hue(user.id) + ", 45%, 72%)";
+    } else if (!avatar.textContent) {
+      avatar.textContent = initials(name);
+      avatar.style.background = "hsl(" + hue(user.id) + ", 45%, 72%)";
+    }
+
+    var icons = "";
+    if (user.self_mute || user.mute) icons += ICONS.mute;
+    if (user.self_deaf || user.deaf) icons += ICONS.deaf;
+    if (user.video) icons += ICONS.video;
+    if (row.badges.innerHTML !== icons) row.badges.innerHTML = icons;
+  }
+
+  function render(state) {
+    state = state || {};
+    var list = state.users || [];
+    var connected = !!state.connected;
+
+    document.getElementById("head").classList.toggle("hidden", state.show_header === false);
+
+    channelEl.textContent = state.channel || "Discord";
+    countEl.textContent = connected ? (list.length + (list.length === 1 ? " user" : " users")) : "";
+    dotEl.className = "dot" + (connected ? " live" : (state.status === "connecting" ? " wait" : ""));
+    emptyEl.classList.toggle("hidden", connected && list.length > 0);
+    if (!connected) { emptyEl.textContent = "Not in a voice channel"; }
+    else if (list.length === 0) { emptyEl.textContent = "Channel is empty"; }
+
+    var seen = Object.create(null);
+    list.forEach(function (user, index) {
+      seen[user.id] = true;
+      var row = rows[user.id] || (rows[user.id] = makeRow(user));
+      paintRow(row, user);
+      if (usersEl.children[index] !== row.li) {
+        usersEl.insertBefore(row.li, usersEl.children[index] || null);
+      }
+    });
+    Object.keys(rows).forEach(function (id) {
+      if (!seen[id]) { rows[id].li.remove(); delete rows[id]; }
+    });
+  }
+
+  window.cg = {
+    update: render,
+    setBackdrop: function (alpha) {
+      var value = typeof alpha === "number" ? alpha : 0.72;
+      value = Math.max(0, Math.min(1, value));
+      document.documentElement.style.setProperty("--bg", "rgba(18, 19, 24, " + value + ")");
+    }
+  };
+  render({ connected: false, status: "connecting", users: [] });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "discord": {
+    "enabled": true,
+    "client_id": "0",
+    "poll_seconds": 2.0,
+    "show_join_history": false
+  },
+  "slots": [
+    {
+      "id": "voice1",
+      "kind": "voice",
+      "name": "Discord",
+      "url": null,
+      "x": 40,
+      "y": 40,
+      "width": 320,
+      "height": 240,
+      "monitor": 0,
+      "opacity": 1.0,
+      "zoom": 1.0,
+      "click_through": true,
+      "visible": true,
+      "layer": "overlay"
+    },
+    {
+      "id": "chat1",
+      "kind": "web",
+      "name": "Multi-chat",
+      "url": "https://chat.colinhorn.co.uk/",
+      "x": 1400,
+      "y": 80,
+      "width": 460,
+      "height": 620,
+      "monitor": 0,
+      "opacity": 1.0,
+      "zoom": 1.0,
+      "click_through": true,
+      "visible": true,
+      "layer": "overlay"
+    }
+  ]
+}

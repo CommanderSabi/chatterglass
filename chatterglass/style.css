@@ -1,0 +1,142 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2026 Commander Sabi */
+/* Control window styling. Deliberately small: colour, spacing, rounding. */
+
+window {
+  background-color: #14151a;
+  color: #e9eaf0;
+}
+
+/* Belt and braces against a transparent seam: the whole content box is opaque. */
+#cgroot {
+  background-color: #14151a;
+}
+
+headerbar {
+  background: #1c1e25;
+  background-image: none;
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid #1c1e25;
+  min-height: 42px;
+}
+
+/* Kill the 1px seam between the titlebar and the content box. */
+headerbar:backdrop {
+  background: #1c1e25;
+  background-image: none;
+}
+
+decoration {
+  box-shadow: none;
+}
+
+headerbar label {
+  color: #e9eaf0;
+  font-weight: 600;
+}
+
+headerbar button {
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: #e9eaf0;
+}
+
+headerbar button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+list,
+listbox {
+  background: transparent;
+}
+
+listbox > row {
+  border-radius: 10px;
+  margin: 2px 4px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+listbox > row:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+listbox > row:selected {
+  background: rgba(90, 140, 255, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(120, 165, 255, 0.45);
+}
+
+paned > separator {
+  background: rgba(255, 255, 255, 0.06);
+  min-width: 1px;
+}
+
+entry,
+spinbutton {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  padding: 5px 8px;
+  color: #e9eaf0;
+}
+
+entry:focus,
+spinbutton:focus {
+  border-color: rgba(120, 165, 255, 0.65);
+  box-shadow: 0 0 0 1px rgba(120, 165, 255, 0.35);
+}
+
+button {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: #e9eaf0;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+button.destructive-action {
+  background: rgba(255, 90, 90, 0.16);
+  color: #ff9c9c;
+}
+
+combobox button {
+  padding: 4px 8px;
+}
+
+scale trough {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 4px;
+  min-height: 6px;
+}
+
+scale highlight {
+  background: #5a8cff;
+  border-radius: 4px;
+}
+
+switch {
+  border-radius: 999px;
+}
+
+label.dim-label {
+  color: #8b8f9c;
+}
+
+.dim-label {
+  color: #8b8f9c;
+}
+
+
+/* Copy feedback: colour only, so the button keeps its size and nothing moves. */
+button.copied {
+  background: rgba(72, 214, 122, 0.30);
+  border-color: rgba(72, 214, 122, 0.70);
+  color: #e9eaf0;
+}
